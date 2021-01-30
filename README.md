@@ -22,7 +22,8 @@ Simple tracker that connects to Finnhub API and notifies on slack when tecnhinal
 | NEW_RELIC_LICENSE_KEY | New relic license key.                                                                         | NO       |
 | BUSGNAG_API_KEY       | Bugnsnag api key. It will only be initialized in `production` environment.                     | NO       |
 | MONGODB_URL           | MongoDB connection URL.                                                                        | YES      |
-| TRADE_BOT_API_KEY     | Value used to protect to the api exposed by the bot web component.                             | YES      |                                                          
+| TRADE_BOT_API_KEY     | Value used to protect to the api exposed by the bot web component.                             | YES      |
+| SYMBOLS               | Symbols that will be tracked                                                                   | YES      |      
 
 ## Running
 
