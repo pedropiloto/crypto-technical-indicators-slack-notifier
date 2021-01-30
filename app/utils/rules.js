@@ -1,5 +1,9 @@
 const {
-  BELOW_OPERATOR, ABOVE_OPERATOR, ABSOLUTE_VARIANCE, PERCENTAGE_VARIANCE, CURRENT_QUOTE, EQUAL_ASSERT_TYPE,
+  BELOW_OPERATOR,
+  ABOVE_OPERATOR,
+  ABSOLUTE_VARIANCE,
+  PERCENTAGE_VARIANCE,
+  CURRENT_QUOTE,
 } = require('./constants');
 
 const SELL_RULE = [
@@ -25,21 +29,13 @@ const SELL_RULE = [
     assert_type: PERCENTAGE_VARIANCE,
     weight: 0.5,
   },
-
-  {
-    metric: 'sma200',
-    operator: BELOW_OPERATOR,
-    value: CURRENT_QUOTE,
-    assert_type: PERCENTAGE_VARIANCE,
-    weight: 0.2,
-  },
 ];
 
 const BUY_RULE = [
   {
     metric: 'rsi',
     operator: BELOW_OPERATOR,
-    value: 36,
+    value: 42,
     assert_type: ABSOLUTE_VARIANCE,
     weight: 4,
   },
@@ -57,14 +53,6 @@ const BUY_RULE = [
     value: CURRENT_QUOTE,
     assert_type: PERCENTAGE_VARIANCE,
     weight: 1,
-  },
-
-  {
-    metric: 'sma200',
-    operator: ABOVE_OPERATOR,
-    value: CURRENT_QUOTE,
-    assert_type: PERCENTAGE_VARIANCE,
-    weight: 0.5,
   },
 ];
 

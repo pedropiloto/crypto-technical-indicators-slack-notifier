@@ -4,19 +4,19 @@ const { log, sendAndCloseLogzio } = require('./utils/logger');
 const {
   OPERATIONAL_LOG_TYPE: OPERATIONAL,
   ERROR_SEVERITY: ERROR,
-  CROSS_DEATH_200,
-  CROSS_GOLDEN_200,
 } = require('./utils/constants');
 const { decimalAdjust } = require('./utils/calculation');
+const startClient = require('./client');
 const {
-  getRSI, getQuote, getBollingerBands, getSMA, getEstimate,
+  getRSI, getBollingerBands, getSMA,
 } = require('./gateways/finnhub-gateway');
 const {
-  publishSellAlert, publishBuyAlert, publishDeathCrossSlackAlert, publishGoldenCrossSlackAlert,
+  publishSellAlert, publishBuyAlert,
 } = require('./gateways/slack-gateway');
-const { verifySMA } = require('./sma-cross-tracker');
 const { SELL_RULE, BUY_RULE } = require('./utils/rules');
 const DecisionEngine = require('./decision-engine');
+
+const lastPrice = {};
 
 const delay = (interval) => new Promise((resolve) => setTimeout(resolve, interval));
 
@@ -27,8 +27,6 @@ const proccessResults = (indicatorResults) => {
 
     if (sellWeight > 0) publishSellAlert(indicatorResults, sellWeight);
     if (buyWeight > -20) publishBuyAlert(indicatorResults, buyWeight);
-    if (indicatorResults.death_cross_200 === true) publishDeathCrossSlackAlert(indicatorResults);
-    if (indicatorResults.golden_cross_200 === true) publishGoldenCrossSlackAlert(indicatorResults);
 
     log({
       message: `Resume for symbol ${indicatorResults.symbol}`,
@@ -37,9 +35,6 @@ const proccessResults = (indicatorResults) => {
       bb_lower: indicatorResults.bb_lower,
       current_quote: indicatorResults.current_quote,
       sma50: indicatorResults.sma50,
-      sma200: indicatorResults.sma200,
-      death_cross_200: indicatorResults.sma_cross_check === CROSS_DEATH_200,
-      golden_cross_200: indicatorResults.sma_cross_check === CROSS_GOLDEN_200,
       sell_weight: sellWeight,
       buy_weight: buyWeight,
       type: OPERATIONAL,
@@ -62,22 +57,15 @@ const proccessResults = (indicatorResults) => {
 };
 
 const analyseSymbol = async (symbol) => {
-  let rsiResponse; let quoteResponse; let
+  let rsiResponse; let
     bollingerBandsResponse; let sma50Response;
-  let sma200Response; let estimateResponse;
   try {
     [rsiResponse,
-      quoteResponse,
       bollingerBandsResponse,
-      sma50Response,
-      sma200Response,
-      estimateResponse] = await Promise.all([
+      sma50Response] = await Promise.all([
       getRSI(symbol),
-      getQuote(symbol),
       getBollingerBands(symbol),
       getSMA(symbol, 50),
-      getSMA(symbol, 200),
-      getEstimate(symbol),
     ]);
   } catch (e) {
     log({
@@ -95,20 +83,17 @@ const analyseSymbol = async (symbol) => {
   }
   const rsiValue = decimalAdjust('floor', rsiValues[rsiValues.length - 1], -2);
 
-  const currentQuote = quoteResponse.data.c;
-
   const bollingerBandsLower = decimalAdjust('floor', bollingerBandsResponse.data.lowerband[
     bollingerBandsResponse.data.upperband.length - 1
-  ], -2);
+  ], -6);
 
   const bollingerBandsUpper = decimalAdjust('floor', bollingerBandsResponse.data.upperband[
     bollingerBandsResponse.data.upperband.length - 1
-  ], -2);
+  ], -6);
 
-  const sma50 = decimalAdjust('floor', sma50Response.data.sma[sma50Response.data.sma.length - 1], -2);
-  const sma200 = decimalAdjust('floor', sma200Response.data.sma[sma200Response.data.sma.length - 1], -2);
+  const sma50 = decimalAdjust('floor', sma50Response.data.sma[sma50Response.data.sma.length - 1], -6);
 
-  const smaCrossCheck = verifySMA(symbol, sma50, sma200);
+  const currentQuote = lastPrice[symbol];
 
   proccessResults({
     symbol,
@@ -117,14 +102,6 @@ const analyseSymbol = async (symbol) => {
     bb_lower: bollingerBandsLower,
     current_quote: currentQuote,
     sma50,
-    sma200,
-    sma_cross_check: smaCrossCheck,
-    death_cross_200: smaCrossCheck === CROSS_DEATH_200,
-    golden_cross_200: smaCrossCheck === CROSS_GOLDEN_200,
-    low_target: estimateResponse.data.targetLow,
-    mean_target: estimateResponse.data.targetMean,
-    median_target: estimateResponse.data.targetMedian,
-    high_target: estimateResponse.data.targetHigh,
   });
 };
 
@@ -140,14 +117,16 @@ const start = async () => {
         log({
           message: `analysing ${symbols[i]}`, type: OPERATIONAL, transactional: true,
         });
+        if (lastPrice[symbols[i]]) {
         // eslint-disable-next-line no-await-in-loop
-        await analyseSymbol(symbols[i]);
+          await analyseSymbol(symbols[i]);
+        }
       }
       log({
         message: 'finishing symbols analysis loop', type: OPERATIONAL, transactional: false,
       });
       // eslint-disable-next-line no-await-in-loop
-      await delay(72000);
+      await delay(2000);
     }
     // await analyseSymbol('CRM');
   } catch (exception) {
@@ -173,3 +152,7 @@ if (process.env.BUSGNAG_API_KEY) {
   Bugsnag.start({ apiKey: `${process.env.BUSGNAG_API_KEY}` });
 }
 start();
+
+startClient((symbol, price) => {
+  lastPrice[symbol] = price;
+});

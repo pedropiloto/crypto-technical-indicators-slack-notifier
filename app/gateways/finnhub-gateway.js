@@ -38,7 +38,7 @@ const getBollingerBands = async (symbol) => {
 
 const getSMA = async (symbol, timePeriod) => {
   const now = Date.now();
-  const sixMonthsAgo = moment().subtract(300, 'days').unix();
+  const sixMonthsAgo = moment().subtract(250, 'days').unix();
   return limiter.wrap(() => axios({
     method: 'get',
     url: `https://finnhub.io/api/v1/indicator?symbol=${symbol}&resolution=D&from=${sixMonthsAgo}&to=${now}&indicator=sma&timeperiod=${timePeriod}`,
@@ -46,18 +46,6 @@ const getSMA = async (symbol, timePeriod) => {
   }))();
 };
 
-const getQuote = async (symbol) => limiter.wrap(() => axios({
-  method: 'get',
-  url: `https://finnhub.io/api/v1/quote?symbol=${symbol}`,
-  headers: { 'X-Finnhub-Token': finnhubToken },
-}))();
-
-const getEstimate = async (symbol) => limiter.wrap(() => axios({
-  method: 'get',
-  url: `https://finnhub.io/api/v1/stock/price-target?symbol=${symbol}`,
-  headers: { 'X-Finnhub-Token': finnhubToken },
-}))();
-
 module.exports = {
-  getRSI, getQuote, getBollingerBands, getSMA, getEstimate,
+  getRSI, getBollingerBands, getSMA,
 };

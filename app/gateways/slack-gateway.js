@@ -14,16 +14,6 @@ const slackBuyToken = `${process.env.SLACK_BUY_TOKEN}`;
 const SELL_CHANNEL = 'SELL_CHANNEL';
 const BUY_CHANNEL = 'BUY_CHANNEL';
 
-const limiter = new Bottleneck({
-  reservoir: 40, // initial value
-  reservoirRefreshAmount: 40,
-  reservoirRefreshInterval: 60 * 1000, // must be divisible by 250
-
-  // also use maxConcurrent and/or minTime for safety
-  maxConcurrent: 5,
-  minTime: 1000, // pick a value that makes sense for your use case
-});
-
 const notifications = {};
 
 const PublishSlackAlert = async (channel, message) => {
@@ -44,7 +34,7 @@ const PublishSlackAlert = async (channel, message) => {
   });
 };
 
-const indicatorsToSlackView = (indicatorResults) => `| \`QUOTE => ${indicatorResults.current_quote}\` | \`RSI => ${indicatorResults.rsi}\` | \`BB_UPPER => ${indicatorResults.bb_upper}\` | \`BB_LOWER => ${indicatorResults.bb_lower}\` | \`SMA50 => ${indicatorResults.sma50}\` | \`SMA200 => ${indicatorResults.sma200}\` | \`DEATH_CROSS => ${indicatorResults.death_cross_200}\` | \`GOLDEN_CROSS => ${indicatorResults.golden_cross_200}\` | \`LOW_TARGET => ${indicatorResults.low_target}\` | \`MEAN_TARGET => ${indicatorResults.mean_target}\` | \`MEDIAN_TARGET => ${indicatorResults.median_target}\` | \`HIGH_TARGET => ${indicatorResults.high_target}\` |`;
+const indicatorsToSlackView = (indicatorResults) => `| \`QUOTE => ${indicatorResults.current_quote}\` | \`RSI => ${indicatorResults.rsi}\` | \`BB_UPPER => ${indicatorResults.bb_upper}\` | \`BB_LOWER => ${indicatorResults.bb_lower}\` | \`SMA50 => ${indicatorResults.sma50}\` |`;
 
 const publishSellAlert = (indicatorResults, sellWeight) => {
   if (!notifications[indicatorResults.symbol]

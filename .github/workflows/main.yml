@@ -47,7 +47,7 @@ jobs:
           image: caprover/cli-caprover:v2.1.1
           run: |
             echo "Hello World"
-            caprover deploy --caproverUrl ${{ secrets.CAPROVER_URL }} --caproverPassword "${{ secrets.CAPROVER_PASSWORD }}" --caproverApp node-technical-indicators-notifier --imageName ${{ secrets.DOCKERHUB_USERNAME }}/node-technical-indicators-notifier:${{ github.sha }}
+            caprover deploy --caproverUrl ${{ secrets.CAPROVER_URL }} --caproverPassword "${{ secrets.CAPROVER_PASSWORD }}" --caproverApp crypto-technical-indicators-slack-notifier --imageName ${{ secrets.DOCKERHUB_USERNAME }}/node-technical-indicators-notifier:${{ github.sha }}
 
   
 

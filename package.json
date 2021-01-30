@@ -1,7 +1,7 @@
 {
-  "name": "node-technical-indicators-notifier",
+  "name": "node-crypto-technical-indicators-notifier",
   "version": "1.0.0",
-  "description": "Node Technical Indicators Notifier",
+  "description": "Node Crypto Technical Indicators Notifier",
   "main": "main.js",
   "scripts": {
     "start": "node app/main.js",
@@ -28,7 +28,8 @@
     "logzio-nodejs": "^2.0.2",
     "moment": "^2.29.1",
     "pino": "^6.7.0",
-    "pino-pretty": "^4.3.0"
+    "pino-pretty": "^4.3.0",
+    "websocket": "^1.0.33"
   },
   "devDependencies": {
     "bdd-lazy-var": "^2.6.0",
