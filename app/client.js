@@ -35,8 +35,8 @@ module.exports = (updatePriceCallback) => {
   client.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
-      const price = data.data[data.data.length - 1].p;
-      const symbol = data.data[data.data.length - 1].s;
+      const price = data.data[0].p;
+      const symbol = data.data[0].s;
       updatePriceCallback(symbol, price);
       // log({
       //   message: `Messsage: {symbol:${symbol} price: ${price}}`,
