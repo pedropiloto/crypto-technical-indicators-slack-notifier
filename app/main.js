@@ -120,13 +120,17 @@ const start = async () => {
         if (lastPrice[symbols[i]]) {
         // eslint-disable-next-line no-await-in-loop
           await analyseSymbol(symbols[i]);
+        } else {
+          log({
+            message: `skipping ${symbols[i]} because no last price is set`, type: OPERATIONAL, transactional: true,
+          });
         }
       }
       log({
         message: 'finishing symbols analysis loop', type: OPERATIONAL, transactional: false,
       });
       // eslint-disable-next-line no-await-in-loop
-      await delay(1200000);
+      await delay(300000);
     }
     // await analyseSymbol('CRM');
   } catch (exception) {
