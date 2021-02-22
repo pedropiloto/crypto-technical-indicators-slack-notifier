@@ -7,11 +7,13 @@ const {
   ERROR_SEVERITY: ERROR,
 } = require('./utils/constants');
 
-module.exports = (updatePriceCallback) => {
+module.exports = (analyseSymbol) => {
   const client = new W3CWebSocket(process.env.FINNHUB_WS_SERVER);
+
+  const counter = {};
   client.onerror = (error) => {
     log({
-      message: `Connect Error: ${error.toString()}`,
+      message: `Connect Error: ${JSON.stringify(error)}`,
       error: error.toString(),
       type: OPERATIONAL,
       transactional: true,
@@ -35,14 +37,21 @@ module.exports = (updatePriceCallback) => {
   client.onmessage = (message) => {
     try {
       const data = JSON.parse(message.data);
-      const price = data.data[0].p;
-      const symbol = data.data[0].s;
-      updatePriceCallback(symbol, price);
-      // log({
-      //   message: `Messsage: {symbol:${symbol} price: ${price}}`,
-      //   type: OPERATIONAL,
-      //   transactional: true,
-      // });
+      if (data.type === 'trade') {
+        const price = data.data[0].p;
+        const symbol = data.data[0].s;
+        if (!counter[symbol] || counter[symbol === 60]) {
+          analyseSymbol(symbol, price);
+          counter[symbol] = 1;
+          log({
+            message: `Processing Messsage: {symbol:${symbol} price: ${price}}`,
+            type: OPERATIONAL,
+            transactional: true,
+          });
+        } else {
+          counter[symbol] = +1;
+        }
+      }
     } catch (error) {
       log({
         message: `Error Proccessing Messsage: ${error.toString()}`,

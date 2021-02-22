@@ -16,10 +16,6 @@ const {
 const { SELL_RULE, BUY_RULE } = require('./utils/rules');
 const DecisionEngine = require('./decision-engine');
 
-const lastPrice = {};
-
-const delay = (interval) => new Promise((resolve) => setTimeout(resolve, interval));
-
 const proccessResults = (indicatorResults) => {
   try {
     const sellWeight = DecisionEngine.evaluate(indicatorResults, SELL_RULE);
@@ -56,23 +52,34 @@ const proccessResults = (indicatorResults) => {
   }
 };
 
-const analyseSymbol = async (symbol) => {
+const analyseSymbol = async (symbol, lastPrice) => {
   let rsiResponse; let
     bollingerBandsResponse; let sma50Response;
   try {
-    [rsiResponse,
-      bollingerBandsResponse,
-      sma50Response] = await Promise.all([
-      getRSI(symbol),
-      getBollingerBands(symbol),
-      getSMA(symbol, 50),
-    ]);
+    rsiResponse = await getRSI(symbol);
   } catch (e) {
     log({
-      message: 'Error during retrieving indicators', error: e.toString(), type: OPERATIONAL, transactional: false, severity: ERROR,
+      message: 'Error during retrieving RSI indicator', error: e.toString(), errorr_trace: e.stack, type: OPERATIONAL, transactional: false, severity: ERROR,
     });
     return;
   }
+  try {
+    bollingerBandsResponse = await getBollingerBands(symbol);
+  } catch (e) {
+    log({
+      message: 'Error during retrieving BollingerBands indicator', error: e.toString(), errorr_trace: e.stack, type: OPERATIONAL, transactional: false, severity: ERROR,
+    });
+    return;
+  }
+  try {
+    sma50Response = await getSMA(symbol, 50);
+  } catch (e) {
+    log({
+      message: 'Error during retrieving SMA 50 indicator', error: e.toString(), errorr_trace: e.stack, type: OPERATIONAL, transactional: false, severity: ERROR,
+    });
+    return;
+  }
+
   const rsiValues = rsiResponse.data.rsi;
 
   if (!rsiValues) {
@@ -93,7 +100,7 @@ const analyseSymbol = async (symbol) => {
 
   const sma50 = decimalAdjust('floor', sma50Response.data.sma[sma50Response.data.sma.length - 1], -6);
 
-  const currentQuote = lastPrice[symbol];
+  const currentQuote = lastPrice;
 
   proccessResults({
     symbol,
@@ -105,58 +112,8 @@ const analyseSymbol = async (symbol) => {
   });
 };
 
-const start = async () => {
-  const symbols = process.env.SYMBOLS.split(',');
-  try {
-    while (true) {
-      log({
-        message: 'starting symbols analysis loop', type: OPERATIONAL, transactional: false,
-      });
-      // eslint-disable-next-line no-plusplus
-      for (let i = 0; i < symbols.length; i++) {
-        log({
-          message: `analysing ${symbols[i]}`, type: OPERATIONAL, transactional: true,
-        });
-        if (lastPrice[symbols[i]]) {
-        // eslint-disable-next-line no-await-in-loop
-          await analyseSymbol(symbols[i]);
-        } else {
-          log({
-            message: `skipping ${symbols[i]} because no last price is set`, type: OPERATIONAL, transactional: true,
-          });
-        }
-      }
-      log({
-        message: 'finishing symbols analysis loop', type: OPERATIONAL, transactional: false,
-      });
-      // eslint-disable-next-line no-await-in-loop
-      await delay(300000);
-    }
-    // await analyseSymbol('CRM');
-  } catch (exception) {
-    const message = 'Error occured in bot, shutting down. Check the logs for more information.';
-    const error = exception.toString();
-    const stackTrace = exception.stack;
-
-    log({
-      message,
-      error,
-      errorr_trace: stackTrace,
-      type: OPERATIONAL,
-      transactional: true,
-      severity: ERROR,
-    });
-
-    sendAndCloseLogzio();
-    process.exit(1);
-  }
-};
-
 if (process.env.BUSGNAG_API_KEY) {
   Bugsnag.start({ apiKey: `${process.env.BUSGNAG_API_KEY}` });
 }
-start();
 
-startClient((symbol, price) => {
-  lastPrice[symbol] = price;
-});
+startClient(analyseSymbol);
