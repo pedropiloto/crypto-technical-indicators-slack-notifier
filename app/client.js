@@ -49,7 +49,7 @@ module.exports = (analyseSymbol) => {
             transactional: true,
           });
         } else {
-          counter[symbol] = +1;
+          counter[symbol] += 1;
         }
       }
     } catch (error) {
