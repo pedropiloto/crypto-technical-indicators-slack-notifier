@@ -1,4 +1,5 @@
-const W3CWebSocket = require('websocket').w3cwebsocket;
+const WS = require('ws');
+const ReconnectingWebSocket = require('reconnecting-websocket');
 
 require('dotenv').config();
 const { log, sendAndCloseLogzio } = require('./utils/logger');
@@ -8,7 +9,11 @@ const {
 } = require('./utils/constants');
 
 module.exports = (analyseSymbol) => {
-  const client = new W3CWebSocket(process.env.FINNHUB_WS_SERVER);
+  const options = {
+    WebSocket: WS, // custom WebSocket constructor
+    debug: true,
+  };
+  const client = new ReconnectingWebSocket(process.env.FINNHUB_WS_SERVER, [], options);
 
   const counter = {};
   client.onerror = (error) => {
