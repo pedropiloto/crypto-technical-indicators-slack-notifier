@@ -45,7 +45,7 @@ module.exports = (analyseSymbol) => {
       if (data.type === 'trade') {
         const price = data.data[0].p;
         const symbol = data.data[0].s;
-        if (!counter[symbol] || counter[symbol] === 200) {
+        if (!counter[symbol] || counter[symbol] === 400) {
           analyseSymbol(symbol, price);
           counter[symbol] = 1;
           log({

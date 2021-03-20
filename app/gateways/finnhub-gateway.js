@@ -15,7 +15,7 @@ const limiter = new Bottleneck({
   minTime: 1000, // pick a value that makes sense for your use case
 });
 
-const granularity = 3600;
+const granularity = 86400;
 const numberOfCandles = 184;
 
 // eslint-disable-next-line import/prefer-default-export
@@ -25,13 +25,13 @@ const getRSI = async (symbol) => {
 
   return limiter.wrap(() => axios({
     method: 'get',
-    url: `https://finnhub.io/api/v1/indicator?symbol=${symbol}&resolution=60&from=${start}&to=${end}&indicator=rsi&timeperiod=14`,
+    url: `https://finnhub.io/api/v1/indicator?symbol=${symbol}&resolution=D&from=${start}&to=${end}&indicator=rsi&timeperiod=14`,
     headers: { 'X-Finnhub-Token': finnhubToken },
   }))();
 };
 
 const getBollingerBands = async (symbol) => {
-  const start = moment().subtract(granularity * numberOfCandles * 20, 'seconds').unix();
+  const start = moment().subtract(granularity * numberOfCandles, 'seconds').unix();
   const end = Date.now();
   return limiter.wrap(() => axios({
     method: 'get',
