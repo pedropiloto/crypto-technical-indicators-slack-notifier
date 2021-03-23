@@ -125,7 +125,7 @@ const start = async () => {
       message: 'finishing symbols analysis loop', type: OPERATIONAL, transactional: false,
     });
     // eslint-disable-next-line no-await-in-loop
-    await delay(72000);
+    await delay(720000);
   }
 };
 
