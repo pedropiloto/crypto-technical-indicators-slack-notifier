@@ -23,7 +23,7 @@ const proccessResults = (indicatorResults) => {
     const buyWeight = DecisionEngine.evaluate(indicatorResults, BUY_RULE);
 
     if (sellWeight > 0) publishSellAlert(indicatorResults, sellWeight);
-    if (buyWeight > -20) publishBuyAlert(indicatorResults, buyWeight);
+    if (buyWeight > 5) publishBuyAlert(indicatorResults, buyWeight);
 
     log({
       message: `Resume for symbol ${indicatorResults.symbol}`,
