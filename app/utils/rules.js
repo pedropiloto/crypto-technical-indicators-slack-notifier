@@ -35,7 +35,7 @@ const BUY_RULE = [
   {
     metric: 'rsi',
     operator: BELOW_OPERATOR,
-    value: 42,
+    value: 32,
     assert_type: ABSOLUTE_VARIANCE,
     weight: 4,
   },
