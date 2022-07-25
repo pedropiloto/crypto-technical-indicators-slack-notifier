@@ -119,7 +119,23 @@ const start = async () => {
         message: `analysing ${symbols[i]}`, type: OPERATIONAL, transactional: true,
       });
       // eslint-disable-next-line no-await-in-loop
-      await analyseSymbol(symbols[i]);
+      try{
+        await analyseSymbol(symbols[i]);
+      } catch (exception) {
+        const message = 'Error occurred when analyzing symbol';
+        const error = exception.toString();
+        const stackTrace = exception.stack;
+    
+        log({
+          message,
+          error,
+          errorr_trace: stackTrace,
+          type: OPERATIONAL,
+          transactional: true,
+          severity: ERROR,
+        });
+        continue
+      }
     }
     log({
       message: 'finishing symbols analysis loop', type: OPERATIONAL, transactional: false,
