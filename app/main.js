@@ -145,10 +145,6 @@ const start = async () => {
   }
 };
 
-if (process.env.BUSGNAG_API_KEY) {
-  Bugsnag.start({ apiKey: `${process.env.BUSGNAG_API_KEY}` });
-}
-
 try {
   start();
 } catch (exception) {
