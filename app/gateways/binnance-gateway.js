@@ -15,7 +15,7 @@ const limiter = new Bottleneck({
 // eslint-disable-next-line import/prefer-default-export
 const getCandles = async (symbol) => limiter.wrap(() => axios({
   method: 'get',
-  url: `https://api.binance.com/api/v3/klines?symbol=${symbol}&limit=200&interval=4h`,
+  url: `https://api.binance.com/api/v3/klines?symbol=${symbol}&limit=200&interval=1d`,
 }))();
 
 const getQuote = async (symbol) => limiter.wrap(() => axios({
